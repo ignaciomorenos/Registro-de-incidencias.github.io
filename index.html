@@ -22,7 +22,7 @@
         .btn-submit { width: 100%; padding: 18px; background: var(--secondary); color: white; border: none; border-radius: 4px; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
         .btn-remove { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; float: right; font-size: 0.7rem; cursor: pointer; }
         .especificar-box { display: none; margin-top: 5px; border: 2px solid var(--accent); }
-        .fila-asiento-container { display: flex; gap: 10px; transition: 0.3s; }
+        .fila-asiento-container { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
@@ -41,8 +41,8 @@
 
     <div class="section">
         <div class="section-title">Sección 1: Datos de Contacto</div>
-        <label>RUT Contacto</label>
-        <input type="text" id="rut_main" placeholder="12345678-9">
+        <label>RUT Contacto (Máx 10 caracteres con guion)</label>
+        <input type="text" id="rut_main" placeholder="12345678-k" maxlength="10">
         <label>Email</label>
         <input type="email" id="email_main" placeholder="correo@ejemplo.cl">
         <label>Teléfono</label>
@@ -58,7 +58,7 @@
         </select>
 
         <div id="detalle_abono" style="display:none">
-            <label>Vigencia del abono</label>
+            <label>Vigencia</label>
             <select id="vigencia">
                 <option value="Semestral">Semestral</option>
                 <option value="Anual">Anual</option>
@@ -103,7 +103,7 @@
         <div id="tickets-list">
             <div class="ticket-block">
                 <label>Ticket #1</label>
-                <input type="text" class="t-rut" placeholder="RUT en ticket (12345678-9)">
+                <input type="text" class="t-rut" placeholder="RUT ticket (12345678-k)" maxlength="10">
                 <div class="fila-asiento-container">
                     <div style="flex:1;"><label>Fila</label><input type="text" class="t-fila" placeholder="Fila"></div>
                     <div style="flex:1;"><label>Asiento</label><input type="text" class="t-asiento" placeholder="N°"></div>
@@ -174,11 +174,8 @@
     function selectSector(s, el) {
         document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active'); globalData.sector = s;
-        
-        // Manejo de numeración: Galería oculta Fila/Asiento
         const containers = document.querySelectorAll('.fila-asiento-container');
         containers.forEach(c => c.style.display = (s === 'GALERÍA') ? 'none' : 'flex');
-
         document.getElementById('pos-container').style.display = (s==='GALERÍA')?'none':'block';
         if(s==='GALERÍA') globalData.posicion = 'General';
     }
@@ -200,7 +197,7 @@
         div.innerHTML = `
             <button class="btn-remove" onclick="this.parentElement.remove()">Quitar</button>
             <label>Ticket #${globalData.ticketCount}</label>
-            <input type="text" class="t-rut" placeholder="RUT en ticket (12345678-9)">
+            <input type="text" class="t-rut" placeholder="RUT ticket (12345678-k)" maxlength="10">
             <div class="fila-asiento-container" style="display:${isGaleria};">
                 <div style="flex:1;"><label>Fila</label><input type="text" class="t-fila" placeholder="Fila"></div>
                 <div style="flex:1;"><label>Asiento</label><input type="text" class="t-asiento" placeholder="N°"></div>
@@ -218,8 +215,17 @@
     async function enviarADrive() {
         const btn = document.getElementById('btnEnviar');
         const rutMain = document.getElementById('rut_main').value;
-        if(!rutMain) return alert("Falta el RUT de contacto");
-        if(!globalData.sector) return alert("Selecciona un sector");
+        const emailMain = document.getElementById('email_main').value;
+
+        // --- VALIDACIONES ---
+        // 1. Validar RUT (Guion y longitud)
+        if (!rutMain.includes('-')) { return alert("El RUT de contacto debe incluir guion (ej: 12345678-9)"); }
+        
+        // 2. Validar Email (Formato real)
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailMain)) { return alert("Por favor ingresa un correo electrónico válido (ejemplo@correo.cl)"); }
+        
+        if (!globalData.sector) { return alert("Por favor selecciona un sector"); }
 
         const confirmacion = confirm("¿Deseas enviar este reporte?");
         if(!confirmacion) return;
@@ -239,7 +245,7 @@
 
         const report = {
             rut_contacto: rutMain,
-            email: document.getElementById('email_main').value,
+            email: emailMain,
             tel: document.getElementById('tel_main').value,
             es_abonado: document.getElementById('es_abonado').value,
             vigencia: document.getElementById('vigencia').value,
