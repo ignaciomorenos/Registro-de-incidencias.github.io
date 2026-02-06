@@ -21,7 +21,8 @@
         .btn-add { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 20px; }
         .btn-submit { width: 100%; padding: 18px; background: var(--secondary); color: white; border: none; border-radius: 4px; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
         .btn-remove { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; float: right; font-size: 0.7rem; cursor: pointer; }
-        .pass-input { margin-top: 15px; border: 2px solid var(--primary); }
+        .especificar-box { display: none; margin-top: 5px; border: 2px solid var(--accent); }
+        .fila-asiento-container { display: flex; gap: 10px; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -30,8 +31,8 @@
     <h2 id="st-title">Validando acceso...</h2>
     <p id="st-desc">Verificando ubicación GPS.</p>
     <div id="pass-area" style="display:none;">
-        <input type="password" id="clavelocal" class="pass-input" placeholder="Contraseña de Test">
-        <button onclick="validarClave()" style="padding: 10px 20px; background: var(--primary); color:white; border:none; border-radius:4px; margin-top:10px;">Entrar con Clave</button>
+        <input type="password" id="clavelocal" placeholder="Contraseña de Test" style="width:100%; padding:10px; margin-top:10px;">
+        <button onclick="validarClave()" style="padding: 10px 20px; background: var(--primary); color:white; border:none; border-radius:4px; margin-top:10px; width:100%;">Entrar con Clave</button>
     </div>
 </div>
 
@@ -103,16 +104,17 @@
             <div class="ticket-block">
                 <label>Ticket #1</label>
                 <input type="text" class="t-rut" placeholder="RUT en ticket (12345678-9)">
-                <div style="display: flex; gap: 10px;">
+                <div class="fila-asiento-container">
                     <div style="flex:1;"><label>Fila</label><input type="text" class="t-fila" placeholder="Fila"></div>
                     <div style="flex:1;"><label>Asiento</label><input type="text" class="t-asiento" placeholder="N°"></div>
                 </div>
                 <label>Problema</label>
-                <select class="t-problema">
+                <select class="t-problema" onchange="toggleOtro(this)">
                     <option value="Asiento Duplicado">Asiento Duplicado</option>
                     <option value="Sobreventa">Sobreventa</option>
                     <option value="Otro">Otro</option>
                 </select>
+                <input type="text" class="especificar-box" placeholder="Escribir...">
             </div>
         </div>
         <button class="btn-add" onclick="agregarTicket()">+ AGREGAR OTRO TICKET</button>
@@ -172,6 +174,11 @@
     function selectSector(s, el) {
         document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active'); globalData.sector = s;
+        
+        // Manejo de numeración: Galería oculta Fila/Asiento
+        const containers = document.querySelectorAll('.fila-asiento-container');
+        containers.forEach(c => c.style.display = (s === 'GALERÍA') ? 'none' : 'flex');
+
         document.getElementById('pos-container').style.display = (s==='GALERÍA')?'none':'block';
         if(s==='GALERÍA') globalData.posicion = 'General';
     }
@@ -181,38 +188,57 @@
         el.classList.add('active'); globalData.posicion = p;
     }
 
+    function toggleOtro(select) {
+        const input = select.nextElementSibling;
+        input.style.display = (select.value === 'Otro') ? 'block' : 'none';
+    }
+
     function agregarTicket() {
         globalData.ticketCount++;
         const div = document.createElement('div'); div.className = 'ticket-block';
+        const isGaleria = globalData.sector === 'GALERÍA' ? 'none' : 'flex';
         div.innerHTML = `
             <button class="btn-remove" onclick="this.parentElement.remove()">Quitar</button>
             <label>Ticket #${globalData.ticketCount}</label>
             <input type="text" class="t-rut" placeholder="RUT en ticket (12345678-9)">
-            <div style="display: flex; gap: 10px;">
+            <div class="fila-asiento-container" style="display:${isGaleria};">
                 <div style="flex:1;"><label>Fila</label><input type="text" class="t-fila" placeholder="Fila"></div>
                 <div style="flex:1;"><label>Asiento</label><input type="text" class="t-asiento" placeholder="N°"></div>
             </div>
             <label>Problema</label>
-            <select class="t-problema"><option value="Asiento Duplicado">Asiento Duplicado</option><option value="Sobreventa">Sobreventa</option><option value="Otro">Otro</option></select>`;
+            <select class="t-problema" onchange="toggleOtro(this)">
+                <option value="Asiento Duplicado">Asiento Duplicado</option>
+                <option value="Sobreventa">Sobreventa</option>
+                <option value="Otro">Otro</option>
+            </select>
+            <input type="text" class="especificar-box" placeholder="Escribir...">`;
         document.getElementById('tickets-list').appendChild(div);
     }
 
     async function enviarADrive() {
         const btn = document.getElementById('btnEnviar');
-        if(!globalData.sector) { alert("Por favor selecciona un sector"); return; }
-        btn.disabled = true; btn.innerText = "SINCRONIZANDO...";
+        const rutMain = document.getElementById('rut_main').value;
+        if(!rutMain) return alert("Falta el RUT de contacto");
+        if(!globalData.sector) return alert("Selecciona un sector");
+
+        const confirmacion = confirm("¿Deseas enviar este reporte?");
+        if(!confirmacion) return;
+
+        btn.disabled = true; btn.innerText = "ENVIANDO...";
 
         const tickets = [];
         document.querySelectorAll('.ticket-block').forEach(b => {
+            const prob = b.querySelector('.t-problema').value;
+            const espec = b.querySelector('.especificar-box').value;
             tickets.push({ 
                 rut: b.querySelector('.t-rut').value, 
-                asiento: `F:${b.querySelector('.t-fila').value} A:${b.querySelector('.t-asiento').value}`, 
-                problema: b.querySelector('.t-problema').value 
+                asiento: globalData.sector === 'GALERÍA' ? 'No Numerada' : `F:${b.querySelector('.t-fila').value} A:${b.querySelector('.t-asiento').value}`, 
+                problema: prob === 'Otro' ? espec : prob
             });
         });
 
         const report = {
-            rut_contacto: document.getElementById('rut_main').value,
+            rut_contacto: rutMain,
             email: document.getElementById('email_main').value,
             tel: document.getElementById('tel_main').value,
             es_abonado: document.getElementById('es_abonado').value,
@@ -225,12 +251,11 @@
 
         try {
             await fetch(URL_GOOGLE, { 
-                method: 'POST', 
-                mode: 'no-cors', 
+                method: 'POST', mode: 'no-cors', 
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(report) 
             });
-            alert("✅ ¡Sincronizado! Los datos están en el Drive."); 
+            alert("✅ ¡Datos Actualizados!"); 
             location.reload();
         } catch(e) {
             alert("Error de conexión.");
