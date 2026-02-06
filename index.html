@@ -20,7 +20,6 @@
         .ticket-block { background: #fff3e0; border: 1px dashed var(--accent); padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative; }
         .btn-add { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 20px; }
         .btn-submit { width: 100%; padding: 18px; background: var(--secondary); color: white; border: none; border-radius: 4px; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
-        #sugerencia-box { background: #e8f5e9; padding: 10px; border-radius: 4px; color: #2e7d32; font-weight: bold; margin-bottom: 15px; display: none; text-align: center; border: 1px solid #2e7d32; }
         .btn-remove { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; float: right; font-size: 0.7rem; cursor: pointer; }
         .pass-input { margin-top: 15px; border: 2px solid var(--primary); }
     </style>
@@ -41,9 +40,12 @@
 
     <div class="section">
         <div class="section-title">Sección 1: Datos de Contacto</div>
-        <input type="text" id="rut_main" placeholder="RUT (xx.xxx.xxx-x)">
-        <input type="email" id="email_main" placeholder="Correo electrónico">
-        <input type="tel" id="tel_main" placeholder="Teléfono (9 dígitos)" maxlength="9" inputmode="numeric">
+        <label>RUT Contacto</label>
+        <input type="text" id="rut_main" placeholder="12345678-9">
+        <label>Email</label>
+        <input type="email" id="email_main" placeholder="correo@ejemplo.cl">
+        <label>Teléfono</label>
+        <input type="tel" id="tel_main" placeholder="9XXXXXXXX" maxlength="9" inputmode="numeric">
     </div>
 
     <div class="section">
@@ -55,15 +57,21 @@
         </select>
 
         <div id="detalle_abono" style="display:none">
-            <label>Vigencia</label>
+            <label>Vigencia del abono</label>
             <select id="vigencia">
-                <option value="Medio año">Medio año</option>
-                <option value="Año completo">Año completo</option>
+                <option value="Semestral">Semestral</option>
+                <option value="Anual">Anual</option>
                 <option value="Otro">Otro</option>
             </select>
-            <label>Año de nacimiento (Sugerencia de categoría)</label>
-            <input type="number" id="anio" placeholder="Ej: 1990" oninput="sugerir()" inputmode="numeric">
-            <div id="sugerencia-box">Categoría sugerida: <span id="sug-text">-</span></div>
+            <label>Tipo de abonado</label>
+            <select id="tipo_abono">
+                <option value="Adulto">Adulto</option>
+                <option value="Mayores">Mayores</option>
+                <option value="Joven">Joven</option>
+                <option value="Cadete">Cadete</option>
+                <option value="Niño">Niño</option>
+                <option value="Celestín">Celestín</option>
+            </select>
         </div>
 
         <label>Sector</label>
@@ -83,7 +91,9 @@
             </div>
         </div>
 
-        <input type="text" id="oc" placeholder="Orden de compra (opcional)">
+        <label>Orden de compra (opcional)</label>
+        <input type="text" id="oc" placeholder="OC-12345">
+        <label>Hora de compra (opcional)</label>
         <input type="time" id="hora">
     </div>
 
@@ -92,10 +102,10 @@
         <div id="tickets-list">
             <div class="ticket-block">
                 <label>Ticket #1</label>
-                <input type="text" class="t-rut" placeholder="RUT en ticket">
+                <input type="text" class="t-rut" placeholder="RUT en ticket (12345678-9)">
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" class="t-fila" placeholder="Fila" style="flex:1;">
-                    <input type="text" class="t-asiento" placeholder="Asiento" style="flex:1;">
+                    <div style="flex:1;"><label>Fila</label><input type="text" class="t-fila" placeholder="Fila"></div>
+                    <div style="flex:1;"><label>Asiento</label><input type="text" class="t-asiento" placeholder="N°"></div>
                 </div>
                 <label>Problema</label>
                 <select class="t-problema">
@@ -110,7 +120,7 @@
 
     <div class="section">
         <div class="section-title">Información adicional</div>
-        <textarea id="comentarios" rows="3" placeholder="Detalles extra..."></textarea>
+        <textarea id="comentarios" rows="3" placeholder="Notas adicionales..."></textarea>
     </div>
 
     <button class="btn-submit" id="btnEnviar" onclick="enviarADrive()">ENVIAR REPORTE</button>
@@ -159,15 +169,6 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    function sugerir() {
-        const a = parseInt(document.getElementById('anio').value);
-        let s = "-";
-        if(a <= 1965) s="Mayores"; else if(a <= 2002) s="Adulto"; else if(a <= 2008) s="Joven";
-        else if(a <= 2013) s="Cadete"; else if(a <= 2017) s="Niño"; else if(a >= 2018) s="Celestín";
-        document.getElementById('sug-text').innerText = s;
-        document.getElementById('sugerencia-box').style.display = (a > 1900) ? 'block' : 'none';
-    }
-
     function selectSector(s, el) {
         document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active'); globalData.sector = s;
@@ -186,10 +187,10 @@
         div.innerHTML = `
             <button class="btn-remove" onclick="this.parentElement.remove()">Quitar</button>
             <label>Ticket #${globalData.ticketCount}</label>
-            <input type="text" class="t-rut" placeholder="RUT en ticket">
+            <input type="text" class="t-rut" placeholder="RUT en ticket (12345678-9)">
             <div style="display: flex; gap: 10px;">
-                <input type="text" class="t-fila" placeholder="Fila" style="flex:1;">
-                <input type="text" class="t-asiento" placeholder="Asiento" style="flex:1;">
+                <div style="flex:1;"><label>Fila</label><input type="text" class="t-fila" placeholder="Fila"></div>
+                <div style="flex:1;"><label>Asiento</label><input type="text" class="t-asiento" placeholder="N°"></div>
             </div>
             <label>Problema</label>
             <select class="t-problema"><option value="Asiento Duplicado">Asiento Duplicado</option><option value="Sobreventa">Sobreventa</option><option value="Otro">Otro</option></select>`;
@@ -216,7 +217,7 @@
             tel: document.getElementById('tel_main').value,
             es_abonado: document.getElementById('es_abonado').value,
             vigencia: document.getElementById('vigencia').value,
-            tipo_abono: document.getElementById('sug-text').innerText,
+            tipo_abono: document.getElementById('tipo_abono').value,
             sector: globalData.sector, posicion: globalData.posicion,
             oc: document.getElementById('oc').value, hora: document.getElementById('hora').value,
             detalle: tickets, info_adicional: document.getElementById('comentarios').value
