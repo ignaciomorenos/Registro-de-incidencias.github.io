@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Asientos - El Teniente</title>
+    <title>Reporte Asientos - El Teniente</title>
     <style>
-        :root { --primary: #1a73e8; --secondary: #34a853; --bg: #f1f3f4; --accent: #ff9800; }
+        :root { --primary: #1a73e8; --secondary: #34a853; --bg: #f8f9fa; --accent: #ff9800; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 10px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
-        #access-screen { text-align: center; margin-top: 50px; background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; }
+        .container { width: 100%; max-width: 600px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
+        #access-screen { text-align: center; margin-top: 60px; background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .section { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .section-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid var(--primary); display: inline-block; }
+        .section-title { font-weight: bold; color: var(--primary); margin-bottom: 12px; border-bottom: 2px solid var(--primary); display: inline-block; }
         label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
         input, select, textarea { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; }
         .ticket-block { background: #fff8e1; border: 1px dashed var(--accent); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
@@ -21,27 +21,37 @@
         .btn-add { background: #e8f0fe; color: var(--primary); margin-bottom: 15px; border: 1px solid var(--primary); }
         .btn-submit { background: var(--secondary); color: white; font-size: 1.1rem; }
         .hidden { display: none; }
+        .otro-text { margin-top: 5px; border-style: dotted !important; }
     </style>
 </head>
 <body>
 
 <div id="access-screen">
-    <div id="geo-status"><h3>Validando ubicación...</h3><p>Buscando señal GPS...</p></div>
+    <div id="geo-status"><h3>Validando ubicación...</h3><p>Estadio El Teniente</p></div>
     <div id="manual-pass" class="hidden">
-        <p style="color: #d93025; font-weight: bold;">📍 Fuera de rango o sin GPS</p>
-        <input type="password" id="passInput" placeholder="Contraseña: Teniente01!">
+        <p style="color: #d93025; font-weight: bold;">📍 Ubicación no detectada</p>
+        <input type="password" id="passInput" placeholder="Clave de acceso">
         <button class="btn btn-submit" onclick="verificarClave()">INGRESAR</button>
     </div>
 </div>
 
 <div id="main-app" class="container">
-    <h2 style="text-align: center; color: var(--primary);">Registro Incidencia - Ticketera</h2>
+    <h2 style="text-align: center; color: var(--primary);">Mejoras Asientos Ticketera</h2>
 
     <div class="section">
-        <div class="section-title">Sección 1 - Contacto</div>
-        <input type="text" id="nombre" placeholder="Nombre y Apellido (Juan Perez)">
+        <div class="section-title">Información del Evento</div>
+        <select id="partido" style="background: #e3f2fd; font-weight: bold;">
+            <option value="O'higgins vs La Serena - 07/02/2026">O'higgins vs La Serena (07/02)</option>
+            <option value="Limache vs O'higgins - 14/02/2026">Limache vs O'higgins (14/02)</option>
+            <option value="O'higgins vs Bahía - 18/02/2026">Libertadores: O'higgins vs Bahía (18/02)</option>
+            <option value="O'higgins vs Colo-Colo - 21/02/2026">O'higgins vs Colo-Colo (21/02)</option>
+        </select>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Sección 1 - Contacto Hincha</div>
         <input type="text" id="rut_contacto" placeholder="RUT (xxxxxxxx-x)">
-        <input type="email" id="email" placeholder="Nombre@correo.cl">
+        <input type="email" id="email" placeholder="nombre@correo.cl">
     </div>
 
     <div class="section">
@@ -52,26 +62,24 @@
         </select>
         <div id="area-abonado" class="hidden">
             <label>Vigencia</label>
-            <select id="vigencia"><option value="Anual">Anual</option><option value="Semestral">Semestral</option></select>
+            <select id="vigencia"><option>Anual</option><option>Semestral</option></select>
             <label>Categoría</label>
-            <select id="categoria">
-                <option value="Adultos">Adultos</option><option value="Mayores">Mayores</option><option value="Joven">Joven</option>
-                <option value="Cadete">Cadete</option><option value="Niño">Niño</option><option value="Celestín">Celestín</option>
+            <select id="categoria_socio">
+                <option>Adulto</option><option>Mayores</option><option>Joven</option>
+                <option>Cadete</option><option>Niño</option><option>Celestín</option>
             </select>
         </div>
     </div>
 
     <div class="section">
         <div class="section-title">Sección 3 - Ubicación</div>
-        <label>Sector</label>
         <select id="sector" onchange="toggleOrientacion(this.value)">
-            <option value="" disabled selected>Seleccione...</option>
+            <option value="" disabled selected>Seleccione Sector...</option>
             <option value="Galería">Galería</option><option value="ANDES">ANDES</option>
             <option value="MARQUESINA">MARQUESINA</option><option value="PALCO">PALCO</option>
         </select>
         <div id="area-orientacion" class="hidden">
-            <label>Orientación</label>
-            <select id="posicion"><option value="Sur">Sur</option><option value="Centro">Centro</option><option value="Norte">Norte</option></select>
+            <select id="posicion"><option>Sur</option><option>Centro</option><option>Norte</option></select>
         </div>
     </div>
 
@@ -79,36 +87,41 @@
         <div class="section-title">Sección 4 - Tickets</div>
         <div id="listado-tickets">
             <div class="ticket-block">
-                <label>RUT en ticket</label>
                 <input type="text" class="t-rut" placeholder="RUT en ticket">
-                <div style="display: flex; gap: 8px;">
-                    <div style="flex:1"><label>Fila</label><input type="text" class="t-fila"></div>
-                    <div style="flex:1"><label>Asiento</label><input type="text" class="t-asiento"></div>
-                </div>
+                <label>Tipo Ticket</label>
+                <select class="t-tipo">
+                    <option>Adulto</option><option>Mayores</option><option>Joven</option>
+                    <option>Cadete</option><option>Niño</option><option>Celestín</option>
+                </select>
+                <div style="display: flex; gap: 8px;"><input type="text" class="t-fila" placeholder="Fila"><input type="text" class="t-asiento" placeholder="Asiento"></div>
                 
                 <label>🪑 Problemas asiento</label>
                 <div class="checkbox-group prob-asiento">
                     <label class="checkbox-item"><input type="checkbox" value="Ocupado"> Asiento ocupado por otro</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Duplicado"> Dos con el mismo asiento</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Duplicado"> Mismo asiento</label>
                     <label class="checkbox-item"><input type="checkbox" value="No existe"> No existe físicamente</label>
                     <label class="checkbox-item"><input type="checkbox" value="Fila incorrecta"> Fila incorrecta</label>
                     <label class="checkbox-item"><input type="checkbox" value="Distinto"> Distinto al ticket</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Otro sector"> Pertenece a otro sector</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Reservado"> Reservado (abonado/cortesía)</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Otro sector"> Otro sector</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Reservado"> Reservado</label>
+                    <label class="checkbox-item"><input type="checkbox" class="chk-otro"> Otro (especificar):</label>
+                    <input type="text" class="otro-text hidden" placeholder="Detalle...">
                 </div>
 
                 <label>🎟️ Conflicto Entrada</label>
                 <div class="checkbox-group prob-entrada">
                     <label class="checkbox-item"><input type="checkbox" value="Abonado ocupado"> Abonado ocupado</label>
-                    <label class="checkbox-item"><input type="checkbox" value="General en Abonado"> General en asiento Abonado</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Cortesía en General"> Cortesía en venta General</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Sin asiento"> General sin asiento disponible</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Derivado"> Abonado derivado sin aviso</label>
-                    <label class="checkbox-item"><input type="checkbox" value="Conflicto tipos"> Conflicto entre tipos entrada</label>
+                    <label class="checkbox-item"><input type="checkbox" value="General en Abono"> Gral en Abono</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Cortesía en Gral"> Cortesía en Gral</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Gral sin asiento"> Gral sin asiento</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Abonado derivado"> Derivado sin aviso</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Conflicto tipos"> Conflicto tipos</label>
+                    <label class="checkbox-item"><input type="checkbox" class="chk-otro"> Otro (especificar):</label>
+                    <input type="text" class="otro-text hidden" placeholder="Detalle...">
                 </div>
             </div>
         </div>
-        <button type="button" class="btn btn-add" onclick="agregarTicket()">+ AGREGAR OTRO TICKET</button>
+        <button class="btn btn-add" onclick="agregarTicket()">+ OTRO TICKET</button>
     </div>
 
     <div class="section">
@@ -120,110 +133,55 @@
 </div>
 
 <script>
-    // REEMPLAZA ESTA URL CON LA TUYA DE APPS SCRIPT
-    const URL_G = "https://script.google.com/macros/s/AKfycbyZOlRBAcw3tn-VnIYdmAvO615xqBfEZrh-Cu9oA-Mz5Jcj6g65X2Xuh1qgYgwY4VwB/exec";
+    const URL_G = "https://script.google.com/macros/s/AKfycbw1ytfBCoi0aeMVyANWaS5AeialatvFjeLoK5y0-ZrXcYnNrHMJMytRjjPEulD6l9E/exec"; 
     const ESTADIO = { lat: -34.1775, lon: -70.7381 };
 
     window.onload = () => {
-        navigator.geolocation.getCurrentPosition(
-            (p) => {
-                const d = calcDist(p.coords.latitude, p.coords.longitude, ESTADIO.lat, ESTADIO.lon);
-                if(d <= 0.8) showApp(); else showManual();
-            },
-            () => showManual()
-        );
+        setMatchByDate();
+        document.addEventListener('change', e => {
+            if(e.target.classList.contains('chk-otro')) {
+                e.target.closest('.checkbox-group').querySelector('.otro-text').classList.toggle('hidden', !e.target.checked);
+            }
+        });
+        navigator.geolocation.getCurrentPosition(p => {
+            const d = Math.sqrt((p.coords.latitude-ESTADIO.lat)**2 + (p.coords.longitude-ESTADIO.lon)**2);
+            if(d <= 0.008) showApp(); else showManual();
+        }, showManual);
     };
 
-    function calcDist(la1, lo1, la2, lo2) {
-        const R = 6371;
-        const dLat = (la2-la1)*Math.PI/180; const dLon = (lo2-lo1)*Math.PI/180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLon/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    function setMatchByDate() {
+        const today = new Date().toISOString().split('T')[0];
+        const s = document.getElementById('partido');
+        if (today === "2026-02-07") s.selectedIndex = 0;
+        else if (today === "2026-02-14") s.selectedIndex = 1;
+        else if (today === "2026-02-18") s.selectedIndex = 2;
+        else if (today === "2026-02-21") s.selectedIndex = 3;
     }
 
-    function showManual() {
-        document.getElementById('geo-status').classList.add('hidden');
-        document.getElementById('manual-pass').classList.remove('hidden');
-    }
+    function showManual() { document.getElementById('geo-status').classList.add('hidden'); document.getElementById('manual-pass').classList.remove('hidden'); }
+    function verificarClave() { if(document.getElementById('passInput').value === "Teniente01!") showApp(); else alert("Clave Incorrecta"); }
+    function showApp() { document.getElementById('access-screen').classList.add('hidden'); document.getElementById('main-app').style.display='block'; }
+    function toggleAbonado(v) { document.getElementById('area-abonado').className = v === "SÍ" ? "" : "hidden"; }
+    function toggleOrientacion(v) { document.getElementById('area-orientacion').className = v === "Galería" ? "hidden" : ""; }
 
-    function verificarClave() {
-        if(document.getElementById('passInput').value === "Teniente01!") showApp();
-        else alert("Clave Incorrecta");
-    }
-
-    function showApp() {
-        document.getElementById('access-screen').classList.add('hidden');
-        document.getElementById('main-app').style.display='block';
-    }
-
-    function toggleAbonado(v) {
-        document.getElementById('area-abonado').className = v === "SÍ" ? "" : "hidden";
-    }
-
-    function toggleOrientacion(v) {
-        document.getElementById('area-orientacion').className = v === "Galería" ? "hidden" : "";
-    }
-
-    function agregarTicket() {
-        const listado = document.getElementById('listado-tickets');
-        const primerBlock = document.querySelector('.ticket-block');
-        const clon = primerBlock.cloneNode(true);
-        clon.querySelectorAll('input').forEach(i => {
-            if(i.type === 'text') i.value = '';
-            else if(i.type === 'checkbox') i.checked = false;
-        });
-        listado.appendChild(clon);
+    function agregarTicket() { 
+        const clon = document.querySelector('.ticket-block').cloneNode(true); 
+        clon.querySelectorAll('input').forEach(i => { if(i.type==='text') i.value=''; else i.checked=false; if(i.classList.contains('otro-text')) i.classList.add('hidden'); }); 
+        document.getElementById('listado-tickets').appendChild(clon); 
     }
 
     async function enviar() {
-        const btn = document.getElementById('btnFinal');
-        btn.disabled = true;
-        btn.innerText = "SINCRO...";
-
-        try {
-            const ticketsRecopilados = [];
-            const bloques = document.querySelectorAll('.ticket-block');
-
-            bloques.forEach(b => {
-                const probAsiento = Array.from(b.querySelectorAll('.prob-asiento input:checked')).map(c => c.value);
-                const probEntrada = Array.from(b.querySelectorAll('.prob-entrada input:checked')).map(c => c.value);
-                
-                ticketsRecopilados.push({
-                    rut_ticket: b.querySelector('.t-rut').value || "S/R",
-                    fila: b.querySelector('.t-fila').value || "S/F",
-                    asiento: b.querySelector('.t-asiento').value || "S/A",
-                    prob_asiento: probAsiento,
-                    prob_entrada: probEntrada
-                });
-            });
-
-            const payload = {
-                nombre: document.getElementById('nombre').value,
-                rut_contacto: document.getElementById('rut_contacto').value,
-                email: document.getElementById('email').value,
-                es_abonado: document.getElementById('es_abonado').value,
-                vigencia: document.getElementById('vigencia') ? document.getElementById('vigencia').value : "N/A",
-                categoria: document.getElementById('categoria') ? document.getElementById('categoria').value : "N/A",
-                sector: document.getElementById('sector').value,
-                posicion: document.getElementById('posicion') ? document.getElementById('posicion').value : "N/A",
-                tickets: ticketsRecopilados,
-                observaciones: document.getElementById('observaciones').value
-            };
-
-            await fetch(URL_G, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            });
-
-            alert("✅ ¡Sincronizado con éxito!");
-            location.reload();
-
-        } catch (err) {
-            alert("Error: " + err.message);
-            btn.disabled = false;
-            btn.innerText = "ENVIAR REPORTE";
-        }
+        const btn = document.getElementById('btnFinal'); btn.disabled = true; btn.innerText = "SINCRO...";
+        const tks = []; document.querySelectorAll('.ticket-block').forEach(b => {
+            const pa = []; b.querySelectorAll('.prob-asiento input[type="checkbox"]:checked:not(.chk-otro)').forEach(c => pa.push(c.value));
+            const oA = b.querySelector('.prob-asiento .otro-text').value; if(oA) pa.push("Otro: "+oA);
+            const pe = []; b.querySelectorAll('.prob-entrada input[type="checkbox"]:checked:not(.chk-otro)').forEach(c => pe.push(c.value));
+            const oE = b.querySelector('.prob-entrada .otro-text').value; if(oE) pe.push("Otro: "+oE);
+            tks.push({ rut_ticket: b.querySelector('.t-rut').value, tipo_entrada: b.querySelector('.t-tipo').value, fila: b.querySelector('.t-fila').value, asiento: b.querySelector('.t-asiento').value, prob_asiento: pa, prob_entrada: pe });
+        });
+        const payload = { partido: document.getElementById('partido').value, rut_contacto: document.getElementById('rut_contacto').value, email: document.getElementById('email').value, es_abonado: document.getElementById('es_abonado').value, vigencia: document.getElementById('vigencia').value, categoria_socio: document.getElementById('categoria_socio').value, sector: document.getElementById('sector').value, posicion: document.getElementById('posicion').value, tickets: tks, observaciones: document.getElementById('observaciones').value };
+        await fetch(URL_G, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        alert("✅ Sincronizado"); location.reload();
     }
 </script>
 </body>
